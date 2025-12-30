@@ -1,0 +1,161 @@
+<?php
+/*
+Plugin Name: Yobiko Reservation
+Description: 土日限定・1枠1名・1か月先まで予約可能な予約システム
+Version: 1.1
+Author: Yobiko
+*/
+
+if (!defined('ABSPATH')) exit;
+
+/* ------------------------------
+  DB作成（有効化時）
+------------------------------ */
+register_activation_hook(__FILE__, function () {
+  global $wpdb;
+  $table = $wpdb->prefix . 'yobiko_reservations';
+  $charset = $wpdb->get_charset_collate();
+
+  $sql = "CREATE TABLE $table (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    reserve_date DATE NOT NULL,
+    reserve_time VARCHAR(30) NOT NULL,
+    name VARCHAR(100) NOT NULL,
+    phone VARCHAR(20) NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  ) $charset;";
+
+  require_once ABSPATH . 'wp-admin/includes/upgrade.php';
+  dbDelta($sql);
+});
+
+/* ------------------------------
+  予約ページ表示
+------------------------------ */
+add_shortcode('yobiko_reservation', function () {
+  global $wpdb;
+  $table = $wpdb->prefix . 'yobiko_reservations';
+
+  $today = new DateTime();
+  $limit = (clone $today)->modify('+1 month');
+
+  // ★ 時間帯定義
+  $time_slots = [
+    '09:00-09:15' => '9:00〜9:15',
+    '10:00-10:15' => '10:00〜10:15',
+    '11:00-11:15' => '11:00〜11:15',
+    '13:00-13:30' => '13:00〜13:30',
+    '14:15-14:30' => '14:15〜14:30',
+    '15:15-15:30' => '15:15〜15:30',
+  ];
+
+  ob_start();
+  ?>
+  <style>
+    .yb-cal table{border-collapse:collapse;width:100%}
+    .yb-cal th,.yb-cal td{border:1px solid #ccc;padding:8px;text-align:center}
+    .yb-ok{background:#e8fff0}
+    .yb-ng{background:#f5f5f5;color:#999}
+    .yb-cal form input{width:90%;margin:3px 0}
+  </style>
+
+  <div class="yb-cal">
+    <h2>予約カレンダー</h2>
+    <table>
+      <tr>
+        <th>日付</th>
+        <?php foreach ($time_slots as $label): ?>
+          <th><?php echo esc_html($label); ?></th>
+        <?php endforeach; ?>
+      </tr>
+
+      <?php
+      for ($d = clone $today; $d <= $limit; $d->modify('+1 day')) {
+        if (!in_array($d->format('N'), [6,7])) continue; // 土日だけ
+
+        echo '<tr>';
+        echo '<td>' . esc_html($d->format('m/d')) . '</td>';
+
+        foreach ($time_slots as $key => $label) {
+          $exists = $wpdb->get_var(
+            $wpdb->prepare(
+              "SELECT COUNT(*) FROM $table WHERE reserve_date=%s AND reserve_time=%s",
+              $d->format('Y-m-d'),
+              $key
+            )
+          );
+
+          if ($exists) {
+            echo '<td class="yb-ng">×</td>';
+          } else {
+            echo '<td class="yb-ok">
+              <form method="post">
+                <input type="hidden" name="date" value="'.$d->format('Y-m-d').'">
+                <input type="hidden" name="time" value="'.$key.'">
+                <input type="text" name="name" placeholder="名前" required>
+                <input type="tel" name="phone" placeholder="電話番号" required>
+                <button type="submit" name="reserve">予約</button>
+              </form>
+            </td>';
+          }
+        }
+        echo '</tr>';
+      }
+      ?>
+    </table>
+  </div>
+  <?php
+
+  if (isset($_POST['reserve'])) {
+    $wpdb->insert($table, [
+      'reserve_date' => sanitize_text_field($_POST['date']),
+      'reserve_time' => sanitize_text_field($_POST['time']),
+      'name' => sanitize_text_field($_POST['name']),
+      'phone' => sanitize_text_field($_POST['phone'])
+    ]);
+    echo "<p>予約完了しました</p>";
+  }
+
+  return ob_get_clean();
+});
+
+/* ------------------------------
+  キャンセルページ
+------------------------------ */
+add_shortcode('yobiko_cancel', function () {
+  global $wpdb;
+  $table = $wpdb->prefix . 'yobiko_reservations';
+
+  if (isset($_POST['cancel'])) {
+    $row = $wpdb->get_row(
+      $wpdb->prepare(
+        "SELECT * FROM $table WHERE name=%s AND phone=%s",
+        sanitize_text_field($_POST['name']),
+        sanitize_text_field($_POST['phone'])
+      )
+    );
+
+    if ($row) {
+      $limit = new DateTime($row->reserve_date . ' 18:00');
+      if (new DateTime() <= $limit->modify('-1 day')) {
+        $wpdb->delete($table, ['id'=>$row->id]);
+        echo "<p>キャンセル完了</p>";
+      } else {
+        echo "<p>前日18時以降はキャンセル不可</p>";
+      }
+    } else {
+      echo "<p>予約が見つかりません</p>";
+    }
+  }
+
+  ob_start();
+  ?>
+  <form method="post">
+    <h2>予約キャンセル</h2>
+    <input type="text" name="name" placeholder="名前" required>
+    <input type="tel" name="phone" placeholder="電話番号" required>
+    <button name="cancel">キャンセル</button>
+  </form>
+  <?php
+  return ob_get_clean();
+});
