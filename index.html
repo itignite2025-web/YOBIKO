@@ -1,0 +1,77 @@
+<!-- TOPページ（YOBIKO） -->
+ <!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>ヘアーサロン岩本</title>
+</head>
+<body>
+<style>
+.yb-top { font-family: "Hiragino Kaku Gothic Pro", "Yu Gothic", sans-serif; max-width:1000px; margin:24px auto; padding:20px; }
+.yb-header { display:flex; justify-content:space-between; align-items:center; gap:12px; }
+.yb-logo { font-size:24px; font-weight:700; }
+.yb-tel { font-size:18px; }
+.yb-nav { margin-top:12px; display:flex; gap:12px; flex-wrap:wrap; }
+.yb-nav a { text-decoration:none; padding:8px 12px; border-radius:6px; background:#f2f2f2; color:#000; }
+.yb-hero { margin-top:24px; padding:20px; background:#fff7f0; border-radius:8px; text-align:center; }
+.yb-hero h1 { margin:0 0 8px; font-size:28px; }
+.yb-sections { display:flex; gap:12px; margin-top:18px; flex-wrap:wrap; }
+.yb-card { flex:1 1 300px; padding:14px; border:1px solid #eee; border-radius:8px; background:#fff; }
+.yb-btn { display:inline-block; padding:8px 12px; margin-top:10px; background:#333; color:#fff; text-decoration:none; border-radius:6px; }
+.yb-footer { margin-top:24px; font-size:14px; color:#666; text-align:center; }
+@media (max-width:700px){ .yb-header{flex-direction:column;align-items:flex-start} .yb-sections{flex-direction:column} }
+</style>
+
+<div class="yb-top">
+  <header class="yb-header">
+    <div class="yb-logo">ヘアーサロン岩本</div>
+    <div>
+      <div class="yb-tel">TEL: <strong>0598-58-1996</strong></div>
+      <div style="font-size:13px; margin-top:6px;"><a href="/contact">お問い合わせ</a></div>
+    </div>
+  </header>
+
+  <nav class="yb-nav" aria-label="site-navigation">
+    <a href="/company">会社概要</a>
+    <a href="/service">事業内容</a>
+    <a href="/news">News</a>
+    <a href="/menu">MENU</a>
+    <a href="/reservation">予約ページ</a>
+  </nav>
+
+  <section class="yb-hero">
+    <h1>やすらぎの時間を、あなたに — ヘアーサロン岩本</h1>
+    <p>地域密着で丁寧な施術。予約は簡単、下のボタンからどうぞ。</p>
+    <p style="margin-top:12px;">
+      <a class="yb-btn" href="menu.html">MENU（詳しく見る）</a>
+      <a class="yb-btn" href="/reservation" style="background:#0073aa; margin-left:8px;">予約ページ（詳しく見る）</a>
+    </p>
+  </section>
+
+  <div class="yb-sections">
+    <div class="yb-card">
+      <h3>News</h3>
+      <p>最新のお知らせを掲載します。例：年末年始の営業時間など。</p>
+      <p><a href="/news">詳しく見る ➤</a></p>
+    </div>
+
+    <div class="yb-card">
+      <h3>会社概要・事業内容</h3>
+      <p>店舗情報・営業方針・取り扱いサービスについて。</p>
+      <p><a href="/company">詳しく見る ➤</a></p>
+    </div>
+
+    <div class="yb-card">
+      <h3>アクセス</h3>
+      <p>店舗の地図や駐車場情報を掲載。</p>
+      <p><a href="/contact">詳しく見る ➤</a></p>
+    </div>
+  </div>
+
+  <footer class="yb-footer">
+    © ヘアーサロン岩本 — TEL: 0598-58-1996
+  </footer>
+</div>
+
+</body>
+</html>
